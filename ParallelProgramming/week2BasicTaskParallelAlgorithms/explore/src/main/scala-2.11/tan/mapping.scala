@@ -15,7 +15,7 @@ object mapping extends App{
   }
 
   def mapASegPar[A, B](inp: Array[A], left: Int, right: Int, f: A => B, out: Array[B]): Unit = {
-    if (right - left < 2)
+    if (right - left < 2) //determine threshold
       mapASegSeq(inp, left, right, f, out)
     else {
       val mid = left + (right - left) / 2

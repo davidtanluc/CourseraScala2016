@@ -27,12 +27,12 @@ object ParallelParenthesesBalancingRunner {
     println(s"sequential result = $seqResult")
     println(s"sequential balancing time: $seqtime ms")
 
-//    val fjtime = standardConfig measure {
-//      parResult = ParallelParenthesesBalancing.parBalance(chars, threshold)
-//    }
-//    println(s"parallel result = $parResult")
-//    println(s"parallel balancing time: $fjtime ms")
-//    println(s"speedup: ${seqtime / fjtime}")
+    val fjtime = standardConfig measure {
+      parResult = ParallelParenthesesBalancing.parBalance(chars, threshold)
+    }
+    println(s"parallel result = $parResult")
+    println(s"parallel balancing time: $fjtime ms")
+    println(s"speedup: ${seqtime / fjtime}")
   }
 }
 
@@ -59,18 +59,43 @@ object ParallelParenthesesBalancing {
    */
   def parBalance(chars: Array[Char], threshold: Int): Boolean = {
 
-    def traverse(idx: Int, until: Int, arg1: Int, arg2: Int) /*: ???*/ = {
-      ???
+    type Element = (Int, Int)
+
+    @tailrec
+    def loop(idx: Int, until: Int, arg1: Int, arg2: Int) : Element = {
+      if (idx >= until) (arg1, arg2)
+      else chars(idx) match {
+        case ')' => loop(idx + 1, until, arg1 - 1, arg2 min (arg1 - 1))
+        case '(' => loop(idx + 1, until, arg1 + 1, arg2)
+        case _ => loop(idx + 1, until, arg1, arg2)
+      }
     }
 
-    def reduce(from: Int, until: Int) /*: ???*/ = {
-      ???
+    def reduce(from: Int, until: Int): Element = {
+      if(until - from <= threshold) loop(from, until, 0, 0)
+      else {
+        val middle = (from + until) / 2
+        val (left, right) = parallel(reduce(from, middle),
+                                     reduce(middle, until))
+        reduceElements(left, right)
+      }
     }
 
-    reduce(0, chars.length) == ???
+    def reduceElements(a: Element, b: Element): Element =
+                                   (a._1 + b._1, a._2 min (a._2 - b._2))
+        reduce(0, chars.length) == (0, 0)
   }
 
   // For those who want more:
   // Prove that your reduction operator is associative!
 
 }
+/*
+sequential result = true
+sequential balancing time: 140.71073053333333 ms
+Starting warmup.
+
+parallel result = true
+parallel balancing time: 59.37701935 ms
+speedup: 2.369784338683436
+ */
