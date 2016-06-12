@@ -62,6 +62,7 @@ trait BinomialHeap extends Heap {
       val x = findMin(ts)
       if (ord.lteq(root(t),x)) root(t) else x
   }
+
   override def deleteMin(ts: H) = ts match {
     case Nil => throw new NoSuchElementException("delete min of empty heap")
     case t::ts =>
