@@ -1,5 +1,6 @@
 package kmeans
 
+import scala.annotation.tailrec
 import scala.collection._
 import scala.util.Random
 import org.scalameter._
@@ -41,8 +42,9 @@ class KMeans {
     closest
   }
 
-  def classify(points: GenSeq[Point], means: GenSeq[Point]): GenMap[Point, GenSeq[Point]] = {
-    ???
+  def classify(points: GenSeq[Point], means: GenSeq[Point]): GenMap[Point, GenSeq[Point]] = {//#1
+    val tmpMap = points.groupBy(findClosest(_, means))
+    means.map(m => m -> tmpMap.getOrElse(m, GenSeq())).toMap
   }
 
   def findAverage(oldMean: Point, points: GenSeq[Point]): Point = if (points.length == 0) oldMean else {
@@ -57,17 +59,21 @@ class KMeans {
     new Point(x / points.length, y / points.length, z / points.length)
   }
 
-  def update(classified: GenMap[Point, GenSeq[Point]], oldMeans: GenSeq[Point]): GenSeq[Point] = {
-    ???
-  }
+ def update(classified: GenMap[Point, GenSeq[Point]], oldMeans: GenSeq[Point]): GenSeq[Point] = {
+     oldMeans map {x:Point => findAverage(x, classified(x))}
+   }
 
-  def converged(eta: Double)(oldMeans: GenSeq[Point], newMeans: GenSeq[Point]): Boolean = {
-    ???
-  }
+   def converged(eta: Double)(oldMeans: GenSeq[Point], newMeans: GenSeq[Point]): Boolean = {
+     oldMeans.zip(newMeans).foldLeft(0d)((acc:Double, pair) => acc + pair._1.squareDistance(pair._2)) < eta
+   }
 
-  final def kMeans(points: GenSeq[Point], means: GenSeq[Point], eta: Double): GenSeq[Point] = {
-    ???
-  }
+   @tailrec
+   final def kMeans(points: GenSeq[Point], means: GenSeq[Point], eta: Double): GenSeq[Point] = {
+     val classification = classify(points, means)
+     val newMeans = update(classification, means)
+     if (converged(eta)(means, newMeans)) kMeans(points, newMeans, eta) else newMeans
+     // your implementation need to be tail recursive
+   }
 }
 
 /** Describes one point in three-dimensional space.
