@@ -2,6 +2,8 @@ package patmat
 
 import common._
 
+import scala.collection.mutable
+
 /**
  * Assignment 4: Huffman coding
  *
@@ -18,15 +20,22 @@ object Huffman {
    * present in the leaves below it. The weight of a `Fork` node is the sum of the weights of these
    * leaves.
    */
-    abstract class CodeTree
+  abstract class CodeTree
   case class Fork(left: CodeTree, right: CodeTree, chars: List[Char], weight: Int) extends CodeTree
   case class Leaf(char: Char, weight: Int) extends CodeTree
   
 
   // Part 1: Basics
-    def weight(tree: CodeTree): Int = ??? // tree match ...
+  def weight(tree: CodeTree): Int = tree match{
+    case Fork(_,_,_,w)=>w
+    case Leaf(_,w)=>w
+
+  }
   
-    def chars(tree: CodeTree): List[Char] = ??? // tree match ...
+  def chars(tree: CodeTree): List[Char] = tree match {
+    case Fork(_,_,chars,_)=>chars
+    case Leaf(ch,_)=>List(ch)
+  }
   
   def makeCodeTree(left: CodeTree, right: CodeTree) =
     Fork(left, right, chars(left) ::: chars(right), weight(left) + weight(right))
@@ -69,7 +78,13 @@ object Huffman {
    *       println("integer is  : "+ theInt)
    *   }
    */
-    def times(chars: List[Char]): List[(Char, Int)] = ???
+  def times(chars: List[Char]): List[(Char, Int)] = {
+    val occurrences = mutable.Map[Char, Int]()
+    for(ch <- chars){
+      if(!occurrences.isDefinedAt(ch))occurrences(ch) = 1 else occurrences(ch) +=1
+    }
+    occurrences.toList
+  }
   
   /**
    * Returns a list of `Leaf` nodes for a given frequency table `freqs`.
@@ -78,12 +93,12 @@ object Huffman {
    * head of the list should have the smallest weight), where the weight
    * of a leaf is the frequency of the character.
    */
-    def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = ???
-  
+  def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = freqs.sorted.map{case(ch,w)=>Leaf(ch,w)}
+
   /**
    * Checks whether the list `trees` contains only one single code tree.
    */
-    def singleton(trees: List[CodeTree]): Boolean = ???
+    def singleton(trees: List[CodeTree]): Boolean = trees.size == 1
   
   /**
    * The parameter `trees` of this function is a list of code trees ordered
@@ -116,7 +131,7 @@ object Huffman {
    *    the example invocation. Also define the return type of the `until` function.
    *  - try to find sensible parameter names for `xxx`, `yyy` and `zzz`.
    */
-    def until(xxx: ???, yyy: ???)(zzz: ???): ??? = ???
+  def until(xxx: ???, yyy: ???)(zzz: ???): ??? = ???
   
   /**
    * This function creates a code tree which is optimal to encode the text `chars`.
@@ -124,7 +139,7 @@ object Huffman {
    * The parameter `chars` is an arbitrary text. This function extracts the character
    * frequencies from that text and creates a code tree based on them.
    */
-    def createCodeTree(chars: List[Char]): CodeTree = ???
+  def createCodeTree(chars: List[Char]): CodeTree = ???
   
 
   // Part 3: Decoding
